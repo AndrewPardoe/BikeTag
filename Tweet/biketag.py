@@ -1,5 +1,3 @@
-# Check to make sure tweet is unique or greater
-
 from bs4 import BeautifulSoup
 from collections import namedtuple
 from dotenv import load_dotenv, find_dotenv
@@ -37,6 +35,12 @@ def oauth_login():
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     return tweepy.API(auth)
+
+def get_last_tag_tweet(api):
+    tweet = api.user_timeline(id=api.me().id, count=1)
+    # This relies on the first number in the tweet being the tag number
+    tagnumber = [int(w) for w in tweet[0].text.split() if w.isdigit()]
+    return tagnumber[0]
 
 def get_imgur_post(page):
     soup = BeautifulSoup(requests.get(page).content, "lxml")
@@ -80,17 +84,17 @@ if __name__ == "__main__":
 
     image = api.media_upload(photo)
 
-    # ALT text doesn't work?
+    # TODO ALT text doesn't work?
     api.create_media_metadata(image.media_id, 'Bike at mystery BikeTag location')  
 
-    status_text = status_text.format(tagdata.number, tagdata.name)
-
-
-
-    status = api.update_status(status=status_text, media_ids=[image.media_id])
-    print("Tweeted with id {}".format(status.id))
-    print("https://twitter.com/tag/status/{}".format(status.id))
-
+    lasttag = get_last_tag_tweet(api)
+    if lasttag < int(tagdata.number): 
+        status_text = status_text.format(tagdata.number, tagdata.name)
+        status = api.update_status(status=status_text, media_ids=[image.media_id])
+        print("Tweeted with id {}".format(status.id))
+        print("https://twitter.com/tag/status/{}".format(status.id))
+    else:
+        print("Already tweeted tag number {}".format(lasttag))
 
     delete_photo(photo)
 
