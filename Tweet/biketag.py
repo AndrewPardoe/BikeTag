@@ -4,6 +4,7 @@ from dotenv import load_dotenv, find_dotenv
 from PIL import Image
 import os
 import requests
+import sys
 import tempfile
 import tweepy
 
@@ -26,15 +27,24 @@ def safeprint(string):
             except UnicodeEncodeError:
                 print(substitute, end='')
 
-def oauth_login():    
-    load_dotenv(find_dotenv())
+def oauth_login():
+    if os.path.exists('.env'):
+        load_dotenv(find_dotenv())
+    else:
+        sys.exit("OAuth keys .env not found. Aborting.")
     consumer_key = os.environ.get("consumer_key")
     consumer_secret = os.environ.get("consumer_secret")
     access_token = os.environ.get("access_token")
     access_token_secret = os.environ.get("access_token_secret")
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
-    return tweepy.API(auth)
+    try:
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_token, access_token_secret)
+        api = tweepy.API(auth)
+        print("Authenticated as: {}".format(api.me().screen_name))
+    except tweepy.TweepError:
+        sys.exit("Failed to authorize user. Aborting.")
+    
+    return api
 
 def get_last_tag_tweet(api):
     tweet = api.user_timeline(id=api.me().id, count=1)
@@ -80,7 +90,6 @@ if __name__ == "__main__":
 
     # Log into Twitter
     api = oauth_login()
-    print("Authenticated as: {}".format(api.me().screen_name))
 
     image = api.media_upload(photo)
 
