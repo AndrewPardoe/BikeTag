@@ -93,12 +93,12 @@ if __name__ == "__main__":
 
     image = api.media_upload(photo)
 
-    # TODO ALT text doesn't work?
     api.create_media_metadata(image.media_id, 'Bike at mystery BikeTag location')  
 
     lasttag = get_last_tag_tweet(api)
     if lasttag < int(tagdata.number): 
         status_text = status_text.format(tagdata.number, tagdata.name)
+        # TODO Make alt text more useful
         status = api.update_status(status=status_text, media_ids=[image.media_id])
         print("Tweeted with id {}".format(status.id))
         print("https://twitter.com/tag/status/{}".format(status.id))
