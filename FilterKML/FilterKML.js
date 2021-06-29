@@ -10,10 +10,11 @@ var fs = require('fs'),
     xmlReader = require('read-xml')
     ;
 var convert = require('xml-js');
+require("dotenv").config();
 
 // Customize the paths here
 const FILE = path.join(__dirname, '/SeattleBikeTag.kml'); 
-var excludes = populateExcludes('c:/Users/Andrew/OneDrive/Biketag');
+var excludes = populateExcludes(path.join(process.env.ONEDRIVE, '/Biketag'));
 
 xmlReader.readXML(fs.readFileSync(FILE), function(err, data) {
     if (err) {
