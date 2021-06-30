@@ -2,13 +2,14 @@ from bs4 import BeautifulSoup
 from collections import namedtuple
 from dotenv import load_dotenv, find_dotenv
 from PIL import Image
+import lxml # needed by bs4
 import os
 import requests
 import sys
 import tempfile
 import tweepy
 
-status_text = \
+status_template = \
     "Seattle BikeTag!\n\n" + \
     "This is bike tag number {} by {}.\n" + \
     "Find this mystery location and move the tag to your favorite spot. " + \
@@ -58,7 +59,7 @@ def get_imgur_post(page):
     div = body.find('div', class_='m-imgur-post')
     return div
 
-def create_photo(div):
+def create_photo_file(div):
     twitter_max_size = (2200, 2200)
     image = div.find('img')
     image_url = image['data-src']
@@ -73,7 +74,7 @@ def delete_photo(filename):
         os.remove(filename)
 
 def get_tagdata(div):
-    # string 1 is number, string 2 is name
+    # string 1 is number, string 2 is name, relies on biketag post format
     tagstrings = []
     for string in div.stripped_strings:
         tagstrings.append(repr(string))
@@ -82,29 +83,33 @@ def get_tagdata(div):
     TagData.name = tagstrings[2].strip('\'')
     return TagData
 
+def upload_photo(photo, tagdata, api):
+    alttext = "{}'s bike at SeattleBikeTag mystery location #{}.".format(tagdata.name, tagdata.number)
+    image = api.media_upload(photo)
+    api.create_media_metadata(image.media_id, alttext)  
+    delete_photo(photo)
+    return image
+
+def update_status(text, image, api):
+    text = text.format(tagdata.number, tagdata.name)
+    status = api.update_status(status=text, media_ids=[image.media_id])
+    print("Tweeted with id {}".format(status.id))
+    print("https://twitter.com/tag/status/{}".format(status.id))
+
+
+
 if __name__ == "__main__":
     post = get_imgur_post('https://seattle.biketag.org/#')
-    photo = create_photo(post)
+    photo = create_photo_file(post)
     tagdata = get_tagdata(post)
-
-
-    # Log into Twitter
     api = oauth_login()
-
-    image = api.media_upload(photo)
-
-    api.create_media_metadata(image.media_id, 'Bike at mystery BikeTag location')  
 
     lasttag = get_last_tag_tweet(api)
     if lasttag < int(tagdata.number): 
-        status_text = status_text.format(tagdata.number, tagdata.name)
-        # TODO Make alt text more useful
-        status = api.update_status(status=status_text, media_ids=[image.media_id])
-        print("Tweeted with id {}".format(status.id))
-        print("https://twitter.com/tag/status/{}".format(status.id))
+        image = upload_photo(photo, tagdata, api)
+        update_status(status_template, image, api)
     else:
         print("Already tweeted tag number {}".format(lasttag))
 
-    delete_photo(photo)
 
 
