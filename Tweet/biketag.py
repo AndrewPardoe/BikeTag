@@ -17,6 +17,9 @@ status_template = \
     "\n" + \
     "#SeattleBikeTag #SeaBikes #BikeSeattle"
 
+# TODO: Implement "catchup" for when we've missed a post
+biketagsite = 'https://seattle.biketag.org/#'
+
 def safeprint(string):
     substitute = '~'
     try:
@@ -99,7 +102,7 @@ def update_status(text, image, api):
 
 
 if __name__ == "__main__":
-    post = get_imgur_post('https://seattle.biketag.org/#')
+    post = get_imgur_post(biketagsite)
     photo = create_photo_file(post)
     tagdata = get_tagdata(post)
     api = oauth_login()
