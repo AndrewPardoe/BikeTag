@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from collections import namedtuple
+from dotenv import load_dotenv, find_dotenv
 from PIL import Image
 import lxml # needed by bs4
 import os
@@ -21,11 +22,14 @@ status_template = \
 biketagsite = 'https://seattle.biketag.org/#'
 
 def oauth_login():
-    # SeattleBikeTag Twitter OAuth keys
-    consumer_key='UmyVF4za2BTLGC8SV5aaWag1D'
-    consumer_secret='xry72ahTdr86amZmqZW2vHqAZ3KJoH9AGnMuD2Nm8vQVIurgZZ'
-    access_token='1377634246542520322-WS3znZOyj4cwlV26Ewc0TGWOkGdEA4'
-    access_token_secret='pXdvhriiN9kSCYstaiD99luNL5grB8wJPHMVNp3A5ZEd7'
+    if os.path.exists('.env'):
+        load_dotenv(find_dotenv())
+    else:
+        sys.exit("OAuth keys .env not found. Aborting.")
+    consumer_key = os.environ.get("consumer_key")
+    consumer_secret = os.environ.get("consumer_secret")
+    access_token = os.environ.get("access_token")
+    access_token_secret = os.environ.get("access_token_secret")
 
     try:
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
