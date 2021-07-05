@@ -22,6 +22,10 @@ biketagsite = 'https://seattle.biketag.org/#'
 
 def oauth_login():
     # SeattleBikeTag Twitter OAuth keys
+    consumer_key='UmyVF4za2BTLGC8SV5aaWag1D'
+    consumer_secret='xry72ahTdr86amZmqZW2vHqAZ3KJoH9AGnMuD2Nm8vQVIurgZZ'
+    access_token='1377634246542520322-WS3znZOyj4cwlV26Ewc0TGWOkGdEA4'
+    access_token_secret='pXdvhriiN9kSCYstaiD99luNL5grB8wJPHMVNp3A5ZEd7'
 
     try:
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
