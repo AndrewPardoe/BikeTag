@@ -112,7 +112,7 @@ if __name__ == "__main__":
             else:
                 print("Already tweeted tag number {}".format(lasttag))
         else:
-            time.sleep(sleepytime)
+            time.sleep(sleepytime * 60)
             print ("Sleeping for {} minutes.".format(sleepytime))
             if sleepytime < 40:
                 sleepytime *= 2
