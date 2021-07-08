@@ -1,3 +1,6 @@
+# TODO: use https://seattle.biketag.org/current/?data=true for status
+# Note that Imgur links are there too.
+
 from bs4 import BeautifulSoup
 from collections import namedtuple
 from dotenv import load_dotenv, find_dotenv
