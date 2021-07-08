@@ -115,8 +115,9 @@ if __name__ == "__main__":
             else:
                 print("Already tweeted tag number {}".format(lasttag))
         else:
+            print ("Sleeping for {} minutes at {}".format(sleepytime, \
+                time.asctime(time.localtime(time.time()))))
             time.sleep(sleepytime * 60)
-            print ("Sleeping for {} minutes.".format(sleepytime))
             if sleepytime < 40:
                 sleepytime *= 2
         lasttweet = int(tagdata.number)
