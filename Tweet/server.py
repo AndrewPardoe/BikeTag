@@ -83,7 +83,7 @@ def wait(delay):
     local_time = time.localtime(time.time())
     print ("Sleeping for {} minutes at {}".format(delay, time.asctime(local_time)))
     time.sleep(delay * 60)
-    if delay < 31:
+    if delay < 30:
         delay += 5
     return delay
 
@@ -98,12 +98,15 @@ if __name__ == "__main__":
             lasttag = get_last_tag_tweet(api)
             if lasttag < int(tag.number): 
                 image = upload_photo(tag, api)
-                update_status(status_template, tag, image, api)
+                update_status(text=status_template, image=image, tag=tag, api=api)
             else:
                 print("Already tweeted tag number {}".format(lasttag))
         else:
             delay = wait(delay)
-        lasttweet = int(tag.number)
+        lasttweet = int(tag.number) # is this in the right place?
+
+
+#TODO Loud mode
 
 
 
