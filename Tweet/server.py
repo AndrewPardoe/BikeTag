@@ -100,6 +100,8 @@ def wait(delay):
         max_delay = 30
     if delay < max_delay:
         delay += 5
+    elif delay > max_delay:
+        delay = max_delay
     return delay
 
 if __name__ == "__main__":
