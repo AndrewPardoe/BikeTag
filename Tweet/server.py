@@ -1,4 +1,5 @@
 import collections
+import logging
 from dotenv import load_dotenv, find_dotenv
 import tweepy
 import os
@@ -22,7 +23,7 @@ def oauth_login(api):
     try:
         api.verify_credentials()
     except:
-        print ("Searching for login credentials")
+        logging.debug("Searching for login credentials")
         if os.path.exists('.env'):
             load_dotenv(find_dotenv())
         else:
@@ -32,11 +33,11 @@ def oauth_login(api):
         access_token = os.environ.get("access_token")
         access_token_secret = os.environ.get("access_token_secret")
         try:
-            print ("Authenticating with Twitter")
+            logging.debug("Authenticating with Twitter")
             auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
             auth.set_access_token(access_token, access_token_secret)
             api = tweepy.API(auth)
-            print("Authenticated as: {}".format(api.me().screen_name))
+            logging.info("Authenticated as: {}".format(api.me().screen_name))
         except tweepy.TweepError:
             sys.exit("Failed to authorize user. Aborting.")
     return api
@@ -44,14 +45,14 @@ def oauth_login(api):
 def get_last_tag_tweet(api):
     # Read last tweeted tag from the SeattleBikeTag timeline.
     # Relies on the first number in the tweet being the tag number.
-    print ("Getting last tweeted tag number")
+    logging.debug ("Getting last tweeted tag number")
     tweet = api.user_timeline(id=api.me().id, count=1)
     tagnumber = [int(w) for w in tweet[0].text.split() if w.isdigit()]
     return tagnumber[0]
 
 def upload_photo(tag, api):
     # Download image and save in temporary file: Twitter can't upload from URL
-    print ("Uploading photo")
+    logging.debug ("Uploading photo")
     filename = tempfile.gettempdir() + os.sep + 'biketag' + tag.extension
     r = requests.get(tag.image, stream=True)
     if r.status_code == 200:
@@ -66,14 +67,14 @@ def upload_photo(tag, api):
     return image
 
 def update_status(text, image, tag, api):
-    print ("Updating status")
+    logging.debug ("Updating status")
     text = text.format(tag.number, tag.credit)
     status = api.update_status(status=text, media_ids=[image.media_id])
-    print("Tweeted with id {}".format(status.id))
-    print("https://twitter.com/tag/status/{}".format(status.id))
+    logging.info("Tweeted with id {}".format(status.id))
+    logging.info("https://twitter.com/tag/status/{}".format(status.id))
 
 def get_tag(biketagsite):
-    print ("Fetching data from biketag.org")
+    logging.debug ("Fetching data from biketag.org")
     tag_data = requests.get(biketagsite).json()
     tag = collections.namedtuple('tag', 'credit, number, image, extension')
     tag.credit = tag_data['credit']
@@ -87,7 +88,7 @@ def get_tag(biketagsite):
 # TODO Make this more intelligent with regards to sleeping longer at night, shorter in busy periods, etc.
 def wait(delay):
     local_time = time.localtime(time.time())
-    print ("Sleeping for {} minutes at {}".format(delay, time.asctime(local_time)))
+    logging.info ("Sleeping for {} minutes at {}".format(delay, time.asctime(local_time)))
     time.sleep(delay * 60)
 
     hour = local_time.tm_hour
@@ -105,6 +106,7 @@ def wait(delay):
     return delay
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     api = 0
     lasttweet = 0
     delay = 5
@@ -112,13 +114,14 @@ if __name__ == "__main__":
         tag = get_tag(biketagsite)
         if (tag.number > lasttweet):
             lasttweet = int(tag.number) 
+            delay = 5
             api = oauth_login(api)
             lasttag = get_last_tag_tweet(api)
             if lasttag < int(tag.number): 
                 image = upload_photo(tag, api)
                 update_status(text=status_template, image=image, tag=tag, api=api)
             else:
-                print("Already tweeted tag number {}".format(lasttag))
+                logging.info("Already tweeted tag number {}".format(lasttag))
         else:
             delay = wait(delay)
 
