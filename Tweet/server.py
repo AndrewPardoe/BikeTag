@@ -70,7 +70,7 @@ def update_status(text, image, tag, api):
     logging.debug ("Updating status")
     text = text.format(tag.number, tag.credit)
     status = api.update_status(status=text, media_ids=[image.media_id])
-    logging.info("Tweeted with id {}".format(status.id))
+    logging.info("Tweeted #{} with id {}".format(tag.number, status.id))
     logging.info("https://twitter.com/tag/status/{}".format(status.id))
 
 def get_tag(biketagsite):
