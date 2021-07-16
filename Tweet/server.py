@@ -82,7 +82,10 @@ def get_tag(biketagsite):
     tag.extension = tag_data['currentTagURLExt']
     # Imgur's 'huge' thumbnail is 1024x1024, accessed with 'h' at end of filename
     image_url = tag_data["currentTagURL"]
-    tag.image = image_url.rstrip(tag.extension) + 'h' + tag.extension
+    if image_url.endswith(tag.extension):
+        tag.image = image_url[:-len(tag.extension)] + 'h' + tag.extension
+    else:
+        tag.image = image_url
     return tag
 
 # TODO Make this more intelligent with regards to sleeping longer at night, shorter in busy periods, etc.
