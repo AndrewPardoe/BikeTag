@@ -44,11 +44,14 @@ def oauth_login(api):
 
 def get_last_tag_tweet(api):
     # Read last tweeted tag from the SeattleBikeTag timeline.
-    # Relies on the first number in the tweet being the tag number.
+    # Precondition: First number in the tweet being the tag number.
     logging.debug ("Getting last tweeted tag number")
     tweet = api.user_timeline(id=api.me().id, count=1)
     tagnumber = [int(w) for w in tweet[0].text.split() if w.isdigit()]
-    return tagnumber[0]
+    if len(tagnumber) == 0: # If first tweet isn't a tag tweet, return something
+        return 0
+    else:
+        return tagnumber[0]
 
 def upload_photo(tag, api):
     # Download image and save in temporary file: Twitter can't upload from URL
