@@ -113,23 +113,33 @@ def wait(delay):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    api = 0
-    lasttweet = 0
-    delay = 5
     while(True):
-        tag = get_tag(biketagsite)
-        if (tag.number > lasttweet):
-            lasttweet = int(tag.number) 
-            delay = 5
-            api = oauth_login(api)
-            lasttag = get_last_tag_tweet(api)
-            if lasttag < int(tag.number): 
-                image = upload_photo(tag, api)
-                update_status(text=status_template, image=image, tag=tag, api=api)
+        api = 0
+        lasttweet = 0
+        delay = 5
+        try:
+            while(True):
+                tag = get_tag(biketagsite)
+                if (tag.number > lasttweet):
+                    lasttweet = int(tag.number) 
+                    delay = 5
+                    api = oauth_login(api)
+                    lasttag = get_last_tag_tweet(api)
+                    if lasttag < int(tag.number): 
+                        image = upload_photo(tag, api)
+                        update_status(text=status_template, image=image, tag=tag, api=api)
+                    else:
+                        logging.info("Already tweeted tag number {}".format(lasttag))
+                else:
+                    delay = wait(delay)
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
             else:
-                logging.info("Already tweeted tag number {}".format(lasttag))
-        else:
-            delay = wait(delay)
+                print(e)
+            wait(5)
+            continue
+        
 
 
 
